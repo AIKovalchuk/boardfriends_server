@@ -1,13 +1,35 @@
 import express from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import dotenv from "dotenv";
+import { PrismaClient } from "@prisma/client";
+import router from "./router";
+
+dotenv.config();
 
 const app = express();
+const prisma = new PrismaClient();
 
-const port = 8080;
+app.use(express.json());
+app.use(cookieParser());
+app.use(cors());
+app.use("/api", router);
+
+const port = process.env.PORT || 8080;
+
+const start = () => {
+    try {
+        app.listen(port, () => {
+            console.log(`Server has been started on port ${port}`);
+        });
+    } catch (error) {
+        console.log(error);
+        prisma.$disconnect();
+    }
+};
 
 app.get("/", (req, res) => {
     res.send("hello world");
 });
 
-app.listen(port, () => {
-    console.log(`Server has been started on port ${port}`);
-});
+start();
