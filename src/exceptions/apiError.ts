@@ -1,11 +1,13 @@
+import { ValidationError } from "express-validator";
+
 class ApiError extends Error {
     public status: number;
-    public errors: string[];
+    public errors: string[] | ValidationError[];
 
     constructor(
         status: number,
         message: string | undefined,
-        errors: string[] = []
+        errors: string[] | ValidationError[] = []
     ) {
         super(message);
         this.status = status;
@@ -16,7 +18,10 @@ class ApiError extends Error {
         return new ApiError(401, "Пользователь не автаризован");
     }
 
-    static BadRequest(message: string | undefined, errors = []) {
+    static BadRequest(
+        message: string | undefined,
+        errors: ValidationError[] = []
+    ) {
         return new ApiError(400, message, errors);
     }
 }

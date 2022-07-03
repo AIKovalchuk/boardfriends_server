@@ -58,6 +58,63 @@ class UserService {
         user.isActivated = true;
         await this.prisma.user.update({ where: { id: user.id }, data: user });
     }
+
+    async login(email: string, password: string) {
+        const user = await this.prisma.user.findUnique({ where: { email } });
+        if (!user) {
+            throw ApiError.BadRequest("Пользователь не найден");
+        }
+
+        const isPass = await bcrypt.compare(password, user.password);
+
+        if (!isPass) {
+            throw ApiError.BadRequest("Неверный пароль");
+        }
+
+        const userDto = new UserDto(user);
+        const tokens = TokenService.generateTokens(userDto);
+        await TokenService.saveToken(userDto.id, tokens.refreshToken);
+
+        return {
+            ...tokens,
+            user: userDto,
+        };
+    }
+
+    async logout(refreshToken: string) {
+        const token = await TokenService.removeToken(refreshToken);
+        return token;
+    }
+
+    async refresh(refreshToken: string | null | undefined) {
+        if (!refreshToken) {
+            throw ApiError.UnauthorizedError();
+        }
+
+        const userDate = await TokenService.validateRefreshToken(refreshToken);
+        const tokenFromDb = await TokenService.findToken(refreshToken);
+
+        if (!!userDate || !tokenFromDb) {
+            throw ApiError.UnauthorizedError();
+        }
+
+        const user = await this.prisma.user.findUnique({
+            where: { id: tokenFromDb.userId },
+        });
+        const userDto = new UserDto(user);
+        const tokens = TokenService.generateTokens(userDto);
+        await TokenService.saveToken(userDto.id, tokens.refreshToken);
+
+        return {
+            ...tokens,
+            user: userDto,
+        };
+    }
+
+    async getAllUsers() {
+        const users = await this.prisma.user.findMany();
+        return users;
+    }
 }
 
 export default new UserService();
