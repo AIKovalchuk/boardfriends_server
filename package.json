@@ -4,9 +4,8 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "dev": "nodemon ./build/index.js",
         "build": "tsc",
-        "serve": "node ./build/index.js",
+        "serve": "nodemon",
         "lint": "eslint ./src && prettier --check ./src",
         "format": "eslint --fix ./src && prettier --write ./src"
     },
