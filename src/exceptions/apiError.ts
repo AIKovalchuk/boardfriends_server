@@ -24,6 +24,10 @@ class ApiError extends Error {
     ) {
         return new ApiError(400, message, errors);
     }
+
+    static NotFound() {
+        return new ApiError(404, "Ресурс не найден");
+    }
 }
 
 export default ApiError;

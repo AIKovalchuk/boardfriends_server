@@ -10,17 +10,50 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model City {
+  id       Int        @id @default(autoincrement())
+  name     String     @unique
+  User     User[]
+  Location Location[]
+}
+
+model Location {
+  id      Int     @id @default(autoincrement())
+  title   String
+  address String  @db.VarChar(255)
+  city    City?   @relation(fields: [cityId], references: [id])
+  cityId  Int?
+  Event   Event[]
+}
+
 model User {
   id             Int     @id @default(autoincrement())
   email          String  @unique
+  firstName      String
+  lastName       String
+  city           City?   @relation(fields: [cityId], references: [id])
+  cityId         Int?
+  about          String? @db.VarChar(255)
   password       String
   isActivated    Boolean @default(false)
   activationLink String?
   Token          Token[]
+  Event          Event[]
+}
+
+model Event {
+  id            Int      @id @default(autoincrement())
+  title         String
+  location      Location @relation(fields: [locationId], references: [id])
+  locationId    Int
+  description   String
+  createdAt     DateTime @default(now())
+  author        User     @relation(fields: [authorId], references: [id])
+  authorId      Int
 }
 
 model Token {
-  user         User   @relation(fields: [userId], references: [id])
-  userId       Int    @unique
-  refreshToken String @unique @db.VarChar(255)
+  user            User   @relation(fields: [userId], references: [id])
+  userId          Int    @unique
+  refreshToken    String @db.Text 
 }

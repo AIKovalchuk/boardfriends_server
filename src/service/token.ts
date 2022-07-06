@@ -1,10 +1,11 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, User } from "@prisma/client";
 import jwt from "jsonwebtoken";
+import UserDto from "../dto/user";
 
 class TokenService {
     private readonly prisma = new PrismaClient();
 
-    generateTokens(payload: any) {
+    generateTokens(payload: UserDto) {
         const accessToken = jwt.sign(
             { ...payload },
             process.env.JWT_ACCESS_SECRET || "",
@@ -27,7 +28,7 @@ class TokenService {
             const userData = jwt.verify(
                 token,
                 process.env.JWT_ACCESS_SECRET || ""
-            );
+            ) as User;
             return userData;
         } catch (error) {
             return null;
@@ -70,7 +71,7 @@ class TokenService {
     }
 
     async findToken(refreshToken: string) {
-        const token = await this.prisma.token.findUnique({
+        const token = await this.prisma.token.findFirst({
             where: {
                 refreshToken,
             },
@@ -79,7 +80,7 @@ class TokenService {
     }
 
     async removeToken(refreshToken: string) {
-        const token = await this.prisma.token.delete({
+        const token = await this.prisma.token.deleteMany({
             where: {
                 refreshToken,
             },

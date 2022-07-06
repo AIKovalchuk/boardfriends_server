@@ -3,15 +3,15 @@ import bcrypt from "bcrypt";
 import { v4 } from "uuid";
 import EmailService from "./email";
 import TokenService from "./token";
-import UserDto from "../dto/user";
+import UserDto, { IUserCreate } from "../dto/user";
 import ApiError from "../exceptions/apiError";
 
 class UserService {
     private prisma = new PrismaClient();
 
-    async registration(email: string, password: string) {
+    async registration(userCreateDto: IUserCreate) {
         const candidate = await this.prisma.user.findUnique({
-            where: { email },
+            where: { email: userCreateDto.email },
         });
 
         if (candidate) {
@@ -20,18 +20,18 @@ class UserService {
             );
         }
 
-        const hashPassword = await bcrypt.hash(password, 3);
+        const hashPassword = await bcrypt.hash(userCreateDto.password, 3);
         const activationLink = v4();
 
         const user = await this.prisma.user.create({
             data: {
-                email,
+                ...userCreateDto,
                 password: hashPassword,
                 activationLink,
             },
         });
         await EmailService.sendActivationMail(
-            email,
+            user.email,
             `${process.env.API_URL}/api/activate/${activationLink}`
         );
 
@@ -101,6 +101,11 @@ class UserService {
         const user = await this.prisma.user.findUnique({
             where: { id: tokenFromDb.userId },
         });
+
+        if (!user) {
+            throw ApiError.BadRequest("Пользователь не найден");
+        }
+
         const userDto = new UserDto(user);
         const tokens = TokenService.generateTokens(userDto);
         await TokenService.saveToken(userDto.id, tokens.refreshToken);

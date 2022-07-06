@@ -16,18 +16,18 @@ class EmailService {
     }
 
     async sendActivationMail(to: string, link: string) {
-        await this.transporter.sendMail({
-            from: process.env.SMTP_USER,
-            to,
-            subject: "Активация аккаунта на BoardFriends",
-            text: "",
-            html: `
-            <div>
-                <h1>Для активации перейдите по ссылке</h1>
-                <a href="${link}">${link}</a>
-            </div>
-            `,
-        });
+        // await this.transporter.sendMail({
+        //     from: process.env.SMTP_USER,
+        //     to,
+        //     subject: "Активация аккаунта на BoardFriends",
+        //     text: "",
+        //     html: `
+        //     <div>
+        //         <h1>Для активации перейдите по ссылке</h1>
+        //         <a href="${link}">${link}</a>
+        //     </div>
+        //     `,
+        // });
     }
 }
 

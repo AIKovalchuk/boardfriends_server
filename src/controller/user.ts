@@ -3,6 +3,7 @@ import UserService from "../service/user";
 import { validationResult } from "express-validator";
 import ApiError from "../exceptions/apiError";
 import { prisma } from "@prisma/client";
+import { IUserCreate } from "../dto/user";
 
 class UserController {
     async registration(req: Request, res: Response, next: NextFunction) {
@@ -16,8 +17,8 @@ class UserController {
                     )
                 );
             }
-            const { email, password } = req.body;
-            const userData = await UserService.registration(email, password);
+            const userDto = req.body as IUserCreate;
+            const userData = await UserService.registration(userDto);
             res.cookie("refreshToken", userData.refreshToken, {
                 maxAge: 30 * 24 * 60 * 60 * 1000,
                 httpOnly: true,
