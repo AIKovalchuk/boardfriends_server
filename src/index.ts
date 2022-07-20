@@ -3,7 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import { PrismaClient } from "@prisma/client";
-import { authRouter, eventRouter } from "./router";
+import { authRouter, eventRouter, placeRouter, userRouter } from "./router";
 import errorMiddleware from "./middleware/error";
 
 dotenv.config();
@@ -16,6 +16,8 @@ app.use(cookieParser());
 app.use(cors());
 app.use("/api", authRouter);
 app.use("/api", eventRouter);
+app.use("/api", placeRouter);
+app.use("/api", userRouter);
 app.use(errorMiddleware);
 
 const port = process.env.PORT || 8080;

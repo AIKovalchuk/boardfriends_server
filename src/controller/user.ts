@@ -92,6 +92,14 @@ class UserController {
             next(error);
         }
     }
+
+    async getCurrentUser(req: Request, res: Response, next: NextFunction) {
+        try {
+            return res.json(res.locals.user);
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export default new UserController();
