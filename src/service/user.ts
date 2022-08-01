@@ -5,9 +5,18 @@ import EmailService from "./email";
 import TokenService from "./token";
 import UserDto from "../dto/user";
 import ApiError from "../exceptions/apiError";
+import { inject, injectable } from "inversify";
+import { TYPES } from "./types";
+import { ILoggerService } from "./interfaces/ILoggerService";
+import { IUserService } from "./interfaces/IUserService";
 
-class UserService {
-    private prisma = new PrismaClient();
+@injectable()
+export class UserService implements IUserService {
+    @inject(TYPES.Prisma)
+    private readonly prisma!: PrismaClient;
+
+    @inject(TYPES.LoggerService)
+    private readonly logger!: ILoggerService;
 
     async registration(email: string, password: string) {
         const candidate = await this.prisma.user.findUnique({
@@ -38,6 +47,8 @@ class UserService {
         const userDto = new UserDto(user);
         const tokens = TokenService.generateTokens(userDto);
         await TokenService.saveToken(userDto.id, tokens.refreshToken);
+
+        this.logger.info("New user has been registreted: " + userDto.id);
 
         return {
             ...tokens,
@@ -74,6 +85,8 @@ class UserService {
         const userDto = new UserDto(user);
         const tokens = TokenService.generateTokens(userDto);
         await TokenService.saveToken(userDto.id, tokens.refreshToken);
+
+        this.logger.info("User log in:" + userDto.id);
 
         return {
             ...tokens,
